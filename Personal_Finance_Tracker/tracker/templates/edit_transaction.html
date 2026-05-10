@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <form method="post" >
+            <h1>Edit Transaction</h1>
+            {% csrf_token %}
+            <label for="title">Title:</label>
+            <input type="text"  name="title" value="{{ transaction.title }}"><br><br>
+             <label for="amount">Amount:</label>
+            <input type="number"  name="amount" value="{{ transaction.amount }}"><br><br>
+             <label for="transaction_type">Transaction type:</label>
+              <select name="transaction_type" value="{{transaction.transaction_type}}"required>
+                <option value="income">Income</option>
+                <option value="expense">Expense</option></select><br><br>
+            <label for="category">Category:</label>
+            <input type="text" name="category" value="{{transaction.category}}"><br><br>
+            <label for="date">Date:</label>
+            <input type="date" name="date" value="{{ transaction.date|date:'Y-m-d' }}"><br><br>
+            <label for="description">Description:</label><br>
+            <textarea id="description" name="description" value="{{transaction.description}}" rows="4" cols="50"></textarea><br>
+            <button type="submit">Submit</button><a href="{% url 'transaction' %}" >Cancel</a>
+
+
+
+        </form>
+    </div>
+</body>
+</html>
