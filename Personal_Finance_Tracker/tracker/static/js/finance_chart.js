@@ -7,7 +7,7 @@ function renderFinanceChart(income, expense, balance) {
             labels: ['Income', 'Expense'],
             datasets: [{
                 data: [income, expense],
-                backgroundColor: ['#2ecc71', '#e74c3c'], // Green & Red
+                backgroundColor: ['#2ecc71', '#e74c3c'],
                 hoverOffset: 15,
                 borderWidth: 2,
                 borderColor: '#ffffff'

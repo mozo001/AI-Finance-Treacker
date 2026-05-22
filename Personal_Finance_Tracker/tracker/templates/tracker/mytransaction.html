@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Ledger | Fintech.ai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b0b0f; }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen flex flex-col md:flex-row">
+
+    <aside class="w-64 bg-[#12121a] border-r border-slate-800 p-6 flex flex-col justify-between hidden md:flex">
+        <div>
+            <div class="flex items-center gap-3 mb-10">
+                <div class="h-8 w-8 bg-purple-600 rounded-lg flex items-center justify-center font-bold text-white">𝚽</div>
+                <span class="text-xl font-bold text-white tracking-wide">Fintech.ai</span>
+            </div>
+            <nav class="space-y-2">
+                <a href="{% url 'tracker:index' %}" class="flex items-center gap-4 px-4 py-3 text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 rounded-xl font-medium transition">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="{% url 'tracker:transaction' %}" class="flex items-center gap-4 px-4 py-3 bg-slate-800 text-purple-400 rounded-xl font-medium transition">
+                    <span>💸</span> Transactions
+                </a>
+            </nav>
+        </div>
+        <div class="border-t border-slate-800 pt-4">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="h-10 w-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold">
+                    {{ request.user.username|slice:":2"|upper }}
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-white">{{ request.user.username }}</p>
+                    <p class="text-xs text-slate-500">Premium User</p>
+                </div>
+            </div>
+            <a href="{% url 'tracker:logout' %}" class="block text-center w-full bg-slate-800 hover:bg-red-900/30 hover:text-red-400 text-slate-300 py-2.5 rounded-xl text-sm font-medium transition">
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <div class="md:hidden bg-[#12121a] border-b border-slate-800 p-4 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <div class="h-6 w-6 bg-purple-600 rounded flex items-center justify-center font-bold text-xs text-white">𝚽</div>
+            <span class="font-bold text-white tracking-wide text-sm">Fintech.ai</span>
+        </div>
+        <div class="flex items-center gap-4 text-xs">
+            <a href="{% url 'tracker:index' %}" class="text-slate-400">Dashboard</a>
+            <a href="{% url 'tracker:transaction' %}" class="text-purple-400">Ledger</a>
+            <a href="{% url 'tracker:logout' %}" class="text-red-400">Logout</a>
+        </div>
+    </div>
+
+    <main class="flex-1 p-6 lg:p-10 space-y-8 overflow-x-hidden max-w-7xl mx-auto w-full">
+        
+        <header class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Transactions Database</h1>
+                <p class="text-slate-500 text-sm mt-1">Complete logs, historical balance distributions, and system mutations.</p>
+            </div>
+            <div class="bg-[#12121a] border border-slate-800 p-4 rounded-xl text-sm flex items-center justify-between sm:justify-start gap-4 text-slate-400 min-w-[240px]">
+                <div>
+                    <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Calculated Balance</p>
+                    <p class="text-xl font-bold text-white mt-0.5">${{ balance|floatformat:2 }}</p>
+                </div>
+                <span class="text-2xl bg-slate-800/60 p-2 rounded-lg">💼</span>
+            </div>
+        </header>
+
+        <div class="bg-[#12121a] border border-slate-800 rounded-2xl overflow-hidden">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-white">Core Telemetry Records</h3>
+                <span class="text-xs text-slate-400 bg-slate-800 px-3 py-1 rounded-md">{{ transactions.count }} total payloads</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-400">
+                    <thead class="bg-slate-800/30 text-slate-400 uppercase text-xs tracking-wider">
+                        <tr>
+                            <th class="px-6 py-4">Transaction Details</th>
+                            <th class="px-6 py-4">Category Node</th>
+                            <th class="px-6 py-4">Execution Date</th>
+                            <th class="px-6 py-4">Volume Amount</th>
+                            <th class="px-6 py-4 text-center">System Management</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                        {% for transaction in transactions %}
+                        <tr class="hover:bg-slate-800/10 transition">
+                            <td class="px-6 py-4 font-medium text-white flex items-center gap-3">
+                                {% if transaction.transaction_type == 'income' %}
+                                    <span class="text-emerald-400 bg-emerald-500/10 p-1.5 rounded-lg text-xs">⬇️</span>
+                                {% else %}
+                                    <span class="text-rose-500 bg-rose-500/10 p-1.5 rounded-lg text-xs">⬆️</span>
+                                {% endif %}
+                                {{ transaction.title }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-300 capitalize">
+                                    {{ transaction.category }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-slate-500">{{ transaction.date }}</td>
+                            <td class="px-6 py-4 font-semibold {% if transaction.transaction_type == 'income' %}text-emerald-400{% else %}text-rose-500{% endif %}">
+                                {% if transaction.transaction_type == 'income' %}+{% else %}-{% endif %}${{ transaction.amount }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-center gap-3">
+                                    <a href="{% url 'tracker:edit_transaction' transaction.pk %}" class="bg-slate-800 hover:bg-purple-600/20 text-slate-300 hover:text-purple-400 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-700/60 transition">
+                                        Modify
+                                    </a>
+                                    <a href="{% url 'tracker:delete_transaction' transaction.pk %}" onclick="return confirm('Execute permanent erasure of this database segment?')" class="bg-slate-800/50 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 px-3 py-1.5 rounded-lg text-xs font-medium border border-transparent hover:border-rose-900/40 transition">
+                                        Drop
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-16 text-center text-slate-600">
+                                <p class="text-base mb-1">No execution parameters discovered.</p>
+                                <p class="text-xs text-slate-700">Add operational components inside the main dashboard terminal.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

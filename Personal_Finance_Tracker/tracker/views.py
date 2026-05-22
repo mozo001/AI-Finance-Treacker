@@ -1,105 +1,136 @@
-from django.shortcuts import render,redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
+from django.utils import timezone
 from .models import Transaction
-# Create your views here.
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.forms import UserCreationForm
 
+def signup_view(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('tracker:index')
+    else:
+        form = UserCreationForm()
+    return render(request, 'tracker/signup.html', {'form': form})
+
+def login_view(request):
+    if request.method == "POST":
+        username_req = request.POST.get('username')
+        password_req = request.POST.get('password')
+        user = authenticate(request, username=username_req, password=password_req)
+        if user is not None:
+            login(request, user)
+            return redirect('tracker:index')
+        else:
+            return render(request, 'tracker/login.html', {'error': 'Invalid credentials'})
+    return render(request, 'tracker/login.html')
+
+def logout_view(request):
+    logout(request)
+    return redirect('tracker:login') # FIXED: Namespaced target
+
+@login_required(login_url='tracker:login')
 def index(request):
-    # 1. Get the filter value from the correctly matched key
-    selected_month = request.GET.get('month_filter')
-    
-    # Start with a base queryset
-    transactions = Transaction.objects.all()
+    # Fetch all transactions owned by this user
+    all_user_transactions = Transaction.objects.filter(user=request.user).order_by('-date')
 
-    # 2. Extract year and month if a filter is applied
-    if selected_month:
-        try:
-            year, month = selected_month.split('-')
-            transactions = transactions.filter(date__year=year, date__month=month)
-        except ValueError:
-            pass # Handles edge cases if string formatting fails
+    # Extract all distinct months and years from database entries for form filtering selections
+    # Note: If your DB backend doesn't support dates tool natively, alternatives include python set iteration
+    available_years = sorted(list(set(t.date.year for t in all_user_transactions)), reverse=True)
+    available_months = [
+        {'value': i, 'name': timezone.datetime(2000, i, 1).strftime('%B')} for i in range(1, 13)
+    ]
 
-    # 3. Calculate sums based on the FILTERED transactions list
-    total_income = transactions.filter(transaction_type='income').aggregate(Sum('amount'))['amount__sum'] or 0
-    total_expense = transactions.filter(transaction_type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
+    # Pull active configuration parameters out of GET payload
+    selected_year = request.GET.get('year')
+    selected_month = request.GET.get('month')
+
+    # Apply date constraints to the ledger execution queries if filters are passed
+    filtered_transactions = all_user_transactions
+    if selected_year and selected_year.isdigit():
+        filtered_transactions = filtered_transactions.filter(date__year=int(selected_year))
+    if selected_month and selected_month.isdigit():
+        filtered_transactions = filtered_transactions.filter(date__month=int(selected_month))
+
+    # Calculate system totals based strictly on applied context filters
+    total_income = filtered_transactions.filter(transaction_type='income').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expense = filtered_transactions.filter(transaction_type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
     balance = total_income - total_expense
 
     context = {
-        'income': float(total_income), 
-        'expense': float(total_expense),
+        'transactions': filtered_transactions[:5], # Keeping pagination slice constraint intact
+        'total_income': float(total_income),
+        'total_expense': float(total_expense),
         'balance': float(balance),
-        'selected_month': selected_month, # Pass back to retain input value
+        'available_years': available_years,
+        'available_months': available_months,
+        'selected_year': int(selected_year) if (selected_year and selected_year.isdigit()) else None,
+        'selected_month': int(selected_month) if (selected_month and selected_month.isdigit()) else None,
     }
-    return render(request, 'index.html', context)
+    return render(request, 'tracker/index.html', context)
 
-
-
+@login_required(login_url='tracker:login') # FIXED: Namespaced target
 def transaction(request):
-    # Fetch all transactions from the database
-    transactions = Transaction.objects.all().order_by('-date')
-    total_income = Transaction.objects.filter(transaction_type='income').aggregate(Sum('amount'))['amount__sum'] or 0
-    total_expense = Transaction.objects.filter(transaction_type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
+    transactions = Transaction.objects.filter(user=request.user).order_by('-date')
+    total_income = transactions.filter(transaction_type='income').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expense = transactions.filter(transaction_type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
     balance = total_income - total_expense
-    # Send them to the template
-    return render(request, 'mytransaction.html', {'transactions': transactions, 'balance': balance})
+    
+    return render(request, 'tracker/mytransaction.html', {'transactions': transactions, 'balance': balance})
 
+@login_required(login_url='tracker:login') # FIXED: Namespaced target
 def delete_transaction(request, pk):
-    transaction = get_object_or_404(Transaction, pk=pk)
+    transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
     transaction.delete()
-    return redirect('transaction')
-
+    return redirect('tracker:transaction')
 
 def categorize_transaction(title):
-
     title = title.lower()
-
     if any(word in title for word in ['kfc', 'burger', 'pizza', 'restaurant']):
         return 'food'
     elif any(word in title for word in ['netflix', 'aws', 'render', 'internet']):
         return 'tech'
     else:
         return 'other'
-    
+
+@login_required(login_url='tracker:login') # FIXED: Namespaced target
+@login_required(login_url='tracker:login')
 def add_transaction(request):
     if request.method == 'POST':
         title = request.POST.get('title')
         amount = request.POST.get('amount')
         transaction_type = request.POST.get('transaction_type')
-        category = request.POST.get('category')
         date = request.POST.get('date')
-        description = request.POST.get('description')
-        category = categorize_transaction(title)
-        title = ''.join(e for e in title if e.isalnum() or e.isspace())
+        category = categorize_transaction(title) 
+
         Transaction.objects.create(
+            user=request.user, 
             title=title,
             amount=amount,
             transaction_type=transaction_type,
-            category=category,
             date=date,
-            description=description,
+            category=category
         )
-        
-        return redirect('transaction')
+        return redirect('tracker:index') 
+    return render(request, 'tracker/add_transaction.html') # Render file on GET request
 
-    return render(request, 'add_transaction.html')
-
+@login_required(login_url='tracker:login') # FIXED: Namespaced target
 def edit_transaction(request, pk):
-    transaction = get_object_or_404(Transaction, pk=pk)
+    transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
+    
     if request.method == 'POST':
-        title = request.POST.get('title')
-        amount = request.POST.get('amount')
-        transaction_type = request.POST.get('transaction_type')
-        category = request.POST.get('category')
-        date = request.POST.get('date')
-        description = request.POST.get('description')
-
-        transaction.title = title
-        transaction.amount = amount
-        transaction.transaction_type = transaction_type
-        transaction.category = category
-        transaction.date = date
-        transaction.description = description
+        transaction.title = request.POST.get('title')
+        transaction.amount = request.POST.get('amount')
+        transaction.transaction_type = request.POST.get('transaction_type')
+        transaction.category = request.POST.get('category')
+        transaction.date = request.POST.get('date')
+        transaction.description = request.POST.get('description', '')
         transaction.save()
 
-        return redirect('transaction')
+        return redirect('tracker:transaction')
 
-    return render(request, 'edit_transaction.html', {'transaction': transaction})
+    return render(request, 'tracker/edit_transaction.html', {'transaction': transaction})
