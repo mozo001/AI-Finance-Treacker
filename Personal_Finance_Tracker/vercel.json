@@ -14,7 +14,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "mymoney/wsgi.py"
+      "dest": "core/wsgi.py"
     }
   ]
 }
