@@ -22,7 +22,8 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 DATABASES = {
     'default': dj_database_url.config(
         default='sqlite:///' + os.path.join(str(BASE_DIR), 'db.sqlite3'),
-        conn_max_age=600
+        conn_max_age=600,
+        ssl_require=True
     )
 }
 application = get_wsgi_application()
