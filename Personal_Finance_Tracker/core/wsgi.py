@@ -10,13 +10,20 @@ import os
 import sys
 from pathlib import Path
 from django.core.wsgi import get_wsgi_application
+import dj_database_url
 from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(BASE_DIR))
 
 load_dotenv()
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
-
+DATABASES = {
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600
+    )
+}
 application = get_wsgi_application()
 app = application
