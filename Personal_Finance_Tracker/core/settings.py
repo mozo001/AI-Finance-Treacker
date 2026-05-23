@@ -27,7 +27,7 @@ if not SECRET_KEY:
 
 # mymoney/settings.py
 DEBUG = False
-ALLOWED_HOSTS = ['yourusername.pythonanywhere.com']
+ALLOWED_HOSTS = ['ai-finance-treacker.vercel.app', '.vercel.app','localhost', '127.0.0.1']
 
 # Application definition
 
