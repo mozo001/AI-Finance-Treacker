@@ -20,7 +20,7 @@ load_dotenv()
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 DATABASES = {
-    'default': dj_database_url.parse('postgresql://postgres:SgwzrVnTLogbCuk1@db.xciicjvkqbywubxndtvt.supabase.co:5432/postgres')
+    'default': dj_database_url.parse('postgres://postgres:SgwzrVnTLogbCuk1@db.xciicjvkqbywubxndtvt.supabase.co:5432/postgres')
 }
 application = get_wsgi_application()
 app = application
