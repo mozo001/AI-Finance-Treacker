@@ -25,8 +25,9 @@ SECRET_KEY=os.environ.get('SECRET_KEY')
 if not SECRET_KEY:
     raise ValueError("The SECRET_KEY environment variable is missing!")
 
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = ['.vercel.app', 'now.sh', '127.0.0.1', 'localhost']
+# mymoney/settings.py
+DEBUG = False
+ALLOWED_HOSTS = ['yourusername.pythonanywhere.com']
 
 # Application definition
 
