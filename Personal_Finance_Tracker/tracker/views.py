@@ -5,6 +5,11 @@ from django.utils import timezone
 from .models import Transaction
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm
+# tracker/views.py
+import os
+import google.generativeai as genai
+
+
 
 def signup_view(request):
     if request.method == "POST":
@@ -134,3 +139,55 @@ def edit_transaction(request, pk):
         return redirect('tracker:transaction')
 
     return render(request, 'tracker/edit_transaction.html', {'transaction': transaction})
+
+
+
+
+# Import your new ML predictor tool
+from .predictor import predict_next_month_expense
+
+@login_required(login_url='tracker:login')
+def index(request):
+    user_transactions = Transaction.objects.filter(user=request.user).order_by('-date')
+    
+    # 1. Existing Core Calculations
+    total_income = user_transactions.filter(transaction_type='income').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expense = user_transactions.filter(transaction_type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
+    balance = total_income - total_expense
+
+    # 2. Trigger the Scikit-Learn Predictive ML
+    predicted_expense = predict_next_month_expense(request.user)
+
+    # 3. Trigger the Gemini Generative AI Coach
+    ai_analysis = "Add more transaction entries to unlock strict AI budgeting tips."
+    
+    if user_transactions.exists():
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if api_key:
+            try:
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                
+                prompt = f"""
+                You are a direct, zero-sugar-coating financial coach. Analyze my current numbers:
+                Total Income: ${total_income}
+                Total Expenses: ${total_expense}
+                Net Balance: ${balance}
+                Estimated Next Month Single-Day Peak Expense: {predicted_expense}
+                
+                Give me exactly two sentences of direct, blunt, actionable evaluation about my financial status. Do not compliment me. Be strict.
+                """
+                response = model.generate_content(prompt)
+                ai_analysis = response.text
+            except Exception:
+                ai_analysis = "AI Coach is currently offline. Verify your Vercel Environment variables."
+
+    context = {
+        'transactions': user_transactions[:5], 
+        'total_income': float(total_income),
+        'total_expense': float(total_expense),
+        'balance': float(balance),
+        'predicted_expense': predicted_expense,  # Pass ML to Template
+        'ai_analysis': ai_analysis,              # Pass AI to Template
+    }
+    return render(request, 'tracker/index.html', context)

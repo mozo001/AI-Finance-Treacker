@@ -71,7 +71,7 @@
                 </div>
                 
                 <form method="GET" action="{% url 'tracker:index' %}" class="flex items-center gap-2 bg-[#12121a] border border-slate-800 p-2 rounded-xl text-sm">
-                    <span class="pl-2">📅</span>
+                    <span>📅</span>
                     <select name="month" onchange="this.form.submit()" class="bg-transparent text-slate-300 focus:outline-none cursor-pointer pr-2 text-xs font-medium">
                         <option value="" class="bg-slate-900 text-slate-400">All Months</option>
                         {% for m in available_months %}
@@ -112,6 +112,27 @@
                     <p class="text-sm text-slate-500 font-medium">Monthly Outflow</p>
                     <p class="text-3xl font-bold text-rose-500 mt-2">${{ total_expense|floatformat:2 }}</p>
                     <span class="absolute top-4 right-4 text-xl opacity-40">📉</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-[#12121a] border border-amber-500/30 p-6 rounded-2xl relative overflow-hidden shadow-lg shadow-amber-950/5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-amber-400 text-sm">📈</span>
+                        <p class="text-xs uppercase font-bold tracking-wider text-amber-400/80">ML Spending Forecast</p>
+                    </div>
+                    <p class="text-2xl font-bold text-white mt-1">{{ predicted_expense }}</p>
+                    <p class="text-[11px] text-slate-500 mt-2">Calculated via 30-day linear regression matrices.</p>
+                </div>
+
+                <div class="md:col-span-2 bg-[#12121a] border border-purple-500/30 p-6 rounded-2xl relative overflow-hidden shadow-lg shadow-purple-950/5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-purple-400 text-sm">🤖</span>
+                        <p class="text-xs uppercase font-bold tracking-wider text-purple-400/80">AI Real-Time Audit</p>
+                    </div>
+                    <p class="text-sm font-medium text-slate-300 italic leading-relaxed mt-1">
+                        "{{ ai_analysis }}"
+                    </p>
                 </div>
             </div>
 
