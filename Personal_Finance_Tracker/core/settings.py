@@ -1,22 +1,21 @@
 
-import os
 from pathlib import Path
 from dotenv import load_dotenv
+import os
 import dj_database_url
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv(BASE_DIR / '.env')
+load_dotenv(BASE_DIR / ".env")
 
-SECRET_KEY=os.environ.get('SECRET_KEY')
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-if not SECRET_KEY:
-    raise ValueError("SECRET_KEY environment variable is not set")
+
+
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    "default": dj_database_url.parse(DATABASE_URL)
 }
 
-# mymoney/settings.py
 DEBUG = False
 ALLOWED_HOSTS = ['ai-finance-treacker.vercel.app', '.vercel.app','localhost', '127.0.0.1']
 
@@ -66,12 +65,8 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    "default": dj_database_url.parse(os.getenv("DATABASE_URL"))
 }
-
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
