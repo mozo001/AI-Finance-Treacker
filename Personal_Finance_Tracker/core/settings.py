@@ -10,7 +10,7 @@ load_dotenv(BASE_DIR / ".env")
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-SECRET_KEY = (+fgj$u%)18sq*%lk1yi83*$r0d)nu423%2b23oqne6e2empqf
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 DATABASES = {
     "default": dj_database_url.parse(DATABASE_URL)
