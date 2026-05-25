@@ -52,8 +52,7 @@ def index(request):
     # 2. Trigger the Scikit-Learn Predictive ML
     predicted_expense = predict_next_month_expense(request.user)
 
-  
-    # 3. Google Gemini Generative AI Audit Engine
+  # 3. Google Gemini Generative AI Audit Engine
     ai_analysis = "Add transactions to unlock your real-time financial audit."
     api_key = os.environ.get("GEMINI_API_KEY")
     
@@ -61,8 +60,8 @@ def index(request):
         try:
             genai.configure(api_key=api_key)
             
-            # Try the standard stable model for 2026
-            model = genai.GenerativeModel('gemini-2.5-flash')
+            # Explicitly declare the model name
+            model = genai.GenerativeModel(model_name='gemini-1.5-flash')
             
             prompt = f"""
             You are a direct, zero-sugar-coating financial auditor. Look at my metrics:
@@ -72,20 +71,14 @@ def index(request):
             
             Give me exactly two sentences of direct, blunt evaluation about my financial status. Do not compliment me. Be strict.
             """
+            
+            # Request content generation
             response = model.generate_content(prompt)
             ai_analysis = response.text.strip()
             
         except Exception as e:
-            try:
-                # FOOLPROOF FALLBACK: Query Google directly to see what models this key owns
-                allowed_models = [
-                    m.name.split('/')[-1] 
-                    for m in genai.list_models() 
-                    if 'generateContent' in m.supported_generation_methods
-                ]
-                ai_analysis = f"DEBUG API ERROR: Model rejected. Your key supports these strings: {', '.join(allowed_models[:4])}"
-            except Exception as list_error:
-                ai_analysis = f"DEBUG API ERROR: {str(e)}"
+            # Fallback check to let you know exactly what is wrong if it still hits an issue
+            ai_analysis = f"DEBUG API ERROR: {str(e)}"
 
     context = {
         'transactions': user_transactions[:5], 
