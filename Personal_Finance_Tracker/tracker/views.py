@@ -82,7 +82,6 @@ def index(request):
             # Show the actual crash message on screen
             ai_analysis = f"DEBUG API ERROR: {str(e)}"
 
-
     context = {
         'transactions': user_transactions[:5], 
         'total_income': float(total_income),
@@ -154,6 +153,9 @@ def edit_transaction(request, pk):
         return redirect('tracker:transaction')
 
     return render(request, 'tracker/edit_transaction.html', {'transaction': transaction})
+
+
+
 
 
 
