@@ -52,37 +52,35 @@ def index(request):
     # 2. Trigger the Scikit-Learn Predictive ML
     predicted_expense = predict_next_month_expense(request.user)
 
- 
-
-# 1. Setup API key
+    # 3. Trigger the Gemini Generative AI Coach
+  # 3. Google Gemini Generative AI Audit Engine
+    ai_analysis = "Add transactions to unlock your real-time financial audit."
+    
+    # Change this part to find out what is failing:
     api_key = os.environ.get("GEMINI_API_KEY")
-    genai.configure(api_key=api_key)
-
-# 2. Use a supported model name
-# 'gemini-1.5-flash' is the standard high-speed choice
-    model_name = 'gemini-1.5-flash'
-
-    try:
-    # Optional: List models to verify what your key can access
-    # for m in genai.list_models():
-    #     print(m.name)
-
-        model = genai.GenerativeModel(model_name=model_name)
     
-        prompt = f"""
-        You are a direct, zero-sugar-coating financial auditor. Look at my metrics:
-        Total Income: ${total_income}
-        Total Expenses: ${total_expense}
-        Net Balance: ${balance}
-        Give me exactly two sentences of direct, blunt evaluation about my financial status. 
-        Do not compliment me. Be strict.
-        """
-    
-        response = model.generate_content(prompt)
-        ai_analysis = response.text.strip()
-    
-    except Exception as e:
-        ai_analysis = f"Error: {str(e)}"
+    if not api_key:
+        ai_analysis = "DEBUG ERROR: Vercel cannot find your GEMINI_API_KEY environment variable!"
+    elif not user_transactions.exists():
+        ai_analysis = f"DEBUG ERROR: No transactions found for user {request.user.username} in this filter view."
+    else:
+        try:
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            
+            prompt = f"""
+            You are a direct financial auditor. Look at my numbers:
+            Total Income: ${total_income}
+            Total Expenses: ${total_expense}
+            Net Balance: ${balance}
+            
+            Give me exactly two sentences of blunt evaluation about my financial status. Do not compliment me. Be strict.
+            """
+            response = model.generate_content(prompt)
+            ai_analysis = response.text.strip()
+        except Exception as e:
+            # Show the actual crash message on screen
+            ai_analysis = f"DEBUG API ERROR: {str(e)}"
 
 
     context = {
