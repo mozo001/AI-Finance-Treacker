@@ -66,12 +66,7 @@ def index(request):
     else:
         try:
             genai.configure(api_key=api_key)
-            models = []
-
-            for m in genai.list_models():
-                models.append(m.name)
-
-            ai_analysis = "\n".join(models[:20])
+            model = genai.GenerativeModel('gemini-2.5-flash')
             
             prompt = f"""
             You are a direct financial auditor. Look at my numbers:
