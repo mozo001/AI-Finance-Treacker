@@ -24,6 +24,3 @@ A full-stack, production-grade personal finance dashboard built with **Django** 
 ```bash
 
 git clone https://github.com/mozo001/AI-Finance-Treacker.git
-
-
-inance-po-namepo-namerepo-name 
