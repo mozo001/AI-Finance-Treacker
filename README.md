@@ -25,45 +25,45 @@ A full-stack, production-grade personal finance dashboard built with **Django** 
 git clone https://github.com/mozo001/AI-Finance-Treacker.git 
 
 
-# 2. Set Up a Virtual Environment
+## 2. Set Up a Virtual Environment
 # Bash
 python -m venv venv
 source venv/bin/activate  # On Windows use: venv\Scripts\activate
 
-## 3. Install Dependencies
+### 3. Install Dependencies
 # Bash
 pip install -r requirements.txt
 
-## 4. Configure Environment Variables
-## Create a .env file in your root project directory (where manage.py is located) and add your private credentials:
+### 4. Configure Environment Variables
+# Create a .env file in your root project directory (where manage.py is located) and add your private credentials:
 
 # Code snippet
 SECRET_KEY=your_django_secret_key_here
 DEBUG=True
 GEMINI_API_KEY=your_google_gemini_api_key_here
 
-# 5. Run Database Migrations
+## 5. Run Database Migrations
 # Bash
 python manage.py makemigrations
 python manage.py migrate
 
-# 6. Start the Development Server
+## 6. Start the Development Server
 # Bash
 python manage.py runserver
 # Open your browser and navigate to http://127.0.0.1:8000/ to test the application.
 
 
-# 🧠 Machine Learning & Data Pipeline Architecture
+## 🧠 Machine Learning & Data Pipeline Architecture
 
-# 1.Aggregation Layer: The Django ORM processes daily user database entries via ExtractDay and Sum aggregations, packaging them into structured arrays.
+ 1.Aggregation Layer: The Django ORM processes daily user database entries via ExtractDay and Sum aggregations, packaging them into structured arrays.
 
-# 2.Trend Line Prediction: The backend feeds active coordinate pairs into a Scikit-Learn LinearRegression model object to calculate intercept data vectors.
+ 2.Trend Line Prediction: The backend feeds active coordinate pairs into a Scikit-Learn LinearRegression model object to calculate intercept data vectors.
 
-# 3.Frontend Ingestion: The generated predictive arrays are safely pushed into the UI via custom JSON context serialization pipelines.
+ 3.Frontend Ingestion: The generated predictive arrays are safely pushed into the UI via custom JSON context serialization pipelines.
 
-# 4.Dashed Visualization: Chart.js handles the parsed coordinates, overlaying a translucent bar structure for real historical data alongside a crisp, purple dashed line indicating the future trajectory.
+ 4.Dashed Visualization: Chart.js handles the parsed coordinates, overlaying a translucent bar structure for real historical data alongside a crisp, purple dashed line indicating the future trajectory.
 
 
-# 🛡️ Production Deployment Note
+## 🛡️ Production Deployment Note
 
-# This application is fully pre-configured to build on Vercel utilizing a custom vercel.json routing matrix combined with explicit WSGI entry points. When moving to production, ensure that your Vercel deployment project settings mirror the environment keys specified inside your local configuration.
+ This application is fully pre-configured to build on Vercel utilizing a custom vercel.json routing matrix combined with explicit WSGI entry points. When moving to production, ensure that your Vercel deployment project settings mirror the environment keys specified inside your local configuration.
