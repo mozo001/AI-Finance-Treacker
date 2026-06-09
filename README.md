@@ -21,9 +21,8 @@ A full-stack, production-grade personal finance dashboard built with **Django** 
 ---
 ## 📋 Local Setup & Installation
 ### 1. Clone the Repository
-```bash
-
-git clone https://github.com/mozo001/AI-Finance-Treacker.git '''
+Bash
+git clone https://github.com/mozo001/AI-Finance-Treacker.git 
 
 ##2. Set Up a Virtual Environment
 Bash
